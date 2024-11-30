@@ -27,36 +27,37 @@
   apiVersion: apps/v1
   kind: Deployment
   metadata:
-    name: network-test
+    name: netpulse
   spec:
     replicas: 1
     selector:
       matchLabels:
-        app: network-test
+        app.kubernetes.io/name: netpulse
     template:
       metadata:
         labels:
-          app: network-test
+          app.kubernetes.io/name: netpulse
       spec:
         containers:
-        - name: network-test
-          image: ghcr.io/rdev2021/network-test:latest
-          ports:
-          - containerPort: 80
-
+          - name: netpulse
+            image: ghcr.io/rdev2021/network-test:latest
+            ports:
+              - containerPort: 9091
   ---
   apiVersion: v1
   kind: Service
   metadata:
-    name: network-test-service
+    name: netpulse
+    labels:
+      app.kubernetes.io/name: netpulse
   spec:
     type: NodePort
-    selector:
-      app: network-test
     ports:
-    - port: 80
-      targetPort: 80
-      nodePort: 30007 # Change to desired NodePort in the range 30000-32767
+      - port: 80
+        targetPort: 9091
+        nodePort: 30171
+    selector:
+      app.kubernetes.io/name: netpulse
   ```
 
 # Screenshots
