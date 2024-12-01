@@ -3,14 +3,28 @@ on:
   pull_request_target:
     types:
       - closed
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.github/dependabot.yml'
+
 jobs:
   if_merged:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          shortSha=$(git rev-parse --short ${{ github.sha }})
+          echo "COMMIT_SHORT_SHA=$shortSha" >> $GITHUB_ENV
+
       - name: Build & Push image
         run: |
            docker login --username rdev2021 --password ${{ secrets.GH_PAT }} ghcr.io
-           docker build . --platform linux/amd64 --tag ghcr.io/rdev2021/network-test:latest
+           docker build . --platform linux/amd64 --tag ghcr.io/rdev2021/network-test:${{ env.COMMIT_SHORT_SHA }}
+           docker tag ghcr.io/rdev2021/network-test:${{ env.COMMIT_SHORT_SHA }} ghcr.io/rdev2021/network-test:latest
            docker push ghcr.io/rdev2021/network-test:latest
+           docker push ghcr.io/rdev2021/network-test:${{ env.COMMIT_SHORT_SHA }}
